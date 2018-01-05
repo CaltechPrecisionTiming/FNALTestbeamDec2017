@@ -247,6 +247,8 @@ int main(int argc, char **argv) {
   float risetime[36]; 
   float constantThresholdTime[36];
   bool _isRinging[36];
+
+  float FFTtime[36];
  
   float xIntercept;
   float yIntercept;
@@ -273,6 +275,7 @@ int main(int argc, char **argv) {
   tree->Branch("integral", integral, "integral[36]/F");
   tree->Branch("intfull", integralFull, "intfull[36]/F");
   tree->Branch("gauspeak", gauspeak, "gauspeak[36]/F");
+  tree->Branch("FFTtime", FFTtime, "FFTtime[36]/F");
   tree->Branch("sigmoidTime", sigmoidTime, "sigmoidTime[36]/F");
   tree->Branch("fullFitTime", fullFitTime, "fullFitTime[36]/F");
   tree->Branch("linearTime0", linearTime0, "linearTime0[36]/F");
@@ -662,6 +665,8 @@ int main(int argc, char **argv) {
 	linearTime60[totalIndex] = fs[5];
 	fallingTime[totalIndex] = fs_falling[0];
 	constantThresholdTime[totalIndex] = ConstantThresholdTime( pulse, 75);
+
+	FFTtime[totalIndex] = FFT_MeanTime(time[realGroup[group]], channel[totalIndex], 1024);
 	
 	delete pulse;
       }

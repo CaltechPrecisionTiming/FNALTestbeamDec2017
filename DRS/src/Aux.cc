@@ -96,50 +96,66 @@ void NotchFilter( short* channel, double* filteredCurrent, float* time, double R
   return;
 };
 
-TGraphErrors* GetTGraph( float* channel, float* time )
+TGraphErrors* GetTGraph( double* channel, double* time, int N )
 {		
   //Setting Errors
-  float errorX[1024], errorY[1024], channelFloat[1024];
+  float errorX[N], errorY[N], channelFloat[N], timeFloat[N];
   float _errorY = 0.00; //5%error on Y
-  for ( int i = 0; i < 1024; i++ )
+  for ( int i = 0; i < N; i++ )
+    {
+      errorX[i]       = .0;
+      errorY[i]       = _errorY*channel[i];
+      channelFloat[i] = -channel[i];
+      timeFloat[i]    = time[i];
+    }
+  TGraphErrors* tg = new TGraphErrors( N, timeFloat, channelFloat, errorX, errorY );
+  return tg;
+};
+
+TGraphErrors* GetTGraph( float* channel, float* time, int N )
+{		
+  //Setting Errors
+  float errorX[N], errorY[N], channelFloat[N];
+  float _errorY = 0.00; //5%error on Y
+  for ( int i = 0; i < N; i++ )
     {
       errorX[i]       = .0;
       errorY[i]       = _errorY*channel[i];
       channelFloat[i] = -channel[i];
     }
-  TGraphErrors* tg = new TGraphErrors( 1024, time, channelFloat, errorX, errorY );
+  TGraphErrors* tg = new TGraphErrors( N, time, channelFloat, errorX, errorY );
   return tg;
 };
 
-TGraphErrors* GetTGraph( double* channel, float* time )
+TGraphErrors* GetTGraph( double* channel, float* time, int N )
 {		
   //Setting Errors
-  float errorX[1024], errorY[1024], channelFloat[1024];
+  float errorX[N], errorY[N], channelFloat[N];
   float _errorY = 0.00; //5%error on Y
-  for ( int i = 0; i < 1024; i++ )
+  for ( int i = 0; i < N; i++ )
     {
       errorX[i]       = .0;
       errorY[i]       = _errorY*channel[i];
       channelFloat[i] = -channel[i];
     }
-  TGraphErrors* tg = new TGraphErrors( 1024, time, channelFloat, errorX, errorY );
+  TGraphErrors* tg = new TGraphErrors( N, time, channelFloat, errorX, errorY );
   return tg;
 };
 
 
-TGraphErrors GetTGraph(  short* channel, float* time )
+TGraphErrors GetTGraph(  short* channel, float* time, int N )
 {		
   //Setting Errors
-  float errorX[1024], errorY[1024], channelFloat[1024];
+  float errorX[N], errorY[N], channelFloat[N];
   float _errorY = 0.00; //5%error on Y
-  for ( int i = 0; i < 1024; i++ )
+  for ( int i = 0; i < N; i++ )
     {
       errorX[i]       = .0;
       errorY[i]       = _errorY*float(channel[i]);
       channelFloat[i] = -1.0*float(channel[i]);
     }
   //TGraphErrors* tg = new TGraphErrors( 1024, time, channelFloat, errorX, errorY );
-  TGraphErrors tg( 1024, time, channelFloat, errorX, errorY );
+  TGraphErrors tg( N, time, channelFloat, errorX, errorY );
   return tg;
 };
 
@@ -891,3 +907,97 @@ bool isRinging( int peak, float *a )
   if ( right_max > 0.5*fabs(a[peak]) ) return true;
   return false;
 };
+
+// from C. Rogan
+double FFT_MeanTime(float* time, short* channel, int N){
+  if (N <= 0 || !time || !channel) return -1;
+  
+  float newchannel[N];
+  for(int i = 0; i < N; i++)
+    newchannel[i] = channel[i];
+
+  return FFT_MeanTime(time, channel, N);
+}
+
+double FFT_MeanTime(float* time, float* channel, int N){
+  if (N <= 0 || !time || !channel) return -1;
+
+  double original[N];
+  double signal[N];
+  double transform[N];
+  double index[N];
+  double X[N];
+
+  for(int i = 0; i < N; i++){
+    original[i] = channel[i];
+    index[i]    = i;
+    X[i]        = time[i];
+  }
+  
+  TGraphErrors* pulse = GetTGraph( original, index, N );
+  int index_min = FindMinAbsolute(N, channel);
+
+  TF1* fpeak = new TF1("fpeak", "gaus", index_min-4,index_min+4);
+  pulse->Fit("fpeak", "Q", "", index_min-4,index_min+4);
+  
+  for(int i = 0; i < N; i++){
+    signal[i] = fpeak->Eval(i);
+    transform[i] = 0;
+  }
+
+  TVirtualFFT* fftR2C = (TVirtualFFT*) TVirtualFFT::FFT(1, &N, "R2C M K");
+  TVirtualFFT* fftC2R = (TVirtualFFT*) TVirtualFFT::FFT(1, &N, "C2R M K");
+  
+  fftR2C->SetPoints(original);
+  fftR2C->Transform();
+
+  double Re[N], Im[N];
+  double Mag[N];
+  
+  double re, im;
+  for(int i = 0; i < N; i++){
+    fftR2C->GetPointComplex(i, re, im);
+    Re[i] = re;
+    Im[i] = im;
+    Mag[i] = sqrt(re*re+im*im);
+  }
+  
+  fftR2C->SetPoints(signal);
+  fftR2C->Transform();
+
+  double sig_mag;
+  for(int i = 0; i < N; i++){
+    fftR2C->GetPointComplex(i, re, im);
+    sig_mag = sqrt(re*re+im*im);
+    if(Mag[i]-sig_mag > sig_mag){
+      double fac = sig_mag/(Mag[i]-sig_mag);
+      Re[i] *= fac;
+      Im[i] *= fac;
+    }
+  }
+
+  fftC2R->SetPointsComplex(Re, Im);
+  fftC2R->Transform();
+
+  for(int i = 0; i < N; i++){
+    transform[i] = fftC2R->GetPointReal(i)/N;
+  }
+
+  delete pulse;
+  pulse = (TGraphErrors*) GetTGraph( transform, X, N );
+  index_min = FindMinAbsolute(N, transform);
+  double low_edge = 0.; double high_edge = 0.; double y = 0.; 
+  pulse->GetPoint(index_min-4, low_edge, y); 
+  pulse->GetPoint(index_min+4, high_edge, y); 
+  
+  delete fpeak;
+  fpeak = (TF1*) new TF1("fpeak", "gaus", low_edge, high_edge);
+  pulse->Fit("fpeak", "Q", "", low_edge, high_edge);
+  
+  double timepeak = fpeak->GetParameter(1);
+
+  delete pulse;
+  delete fpeak;
+  
+  return timepeak;
+}

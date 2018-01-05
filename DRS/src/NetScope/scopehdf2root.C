@@ -137,6 +137,8 @@ int main(int argc, char **argv) {
   float constantThresholdTime[4];
   bool _isRinging[4];
 
+  float FFTtime[4];
+
   for(iCh=0; iCh<4; iCh++) {
     xmin[iCh] = 0.;
     amp [iCh] = 0.;
@@ -164,6 +166,7 @@ int main(int argc, char **argv) {
   tree->Branch("integral", integral, "integral[4]/F");
   tree->Branch("intfull", integralFull, "intfull[4]/F");
   tree->Branch("gauspeak", gauspeak, "gauspeak[4]/F");
+  tree->Branch("FFTtime", FFTtime, "FFTtime[4]/F");
   tree->Branch("sigmoidTime", sigmoidTime, "sigmoidTime[4]/F");
   tree->Branch("fullFitTime", fullFitTime, "fullFitTime[4]/F");
   tree->Branch("linearTime0", linearTime0, "linearTime0[4]/F");
@@ -305,6 +308,8 @@ int main(int argc, char **argv) {
 	fallingTime[iCh] = fs_falling[0];
 	constantThresholdTime[iCh] = ConstantThresholdTime( pulse, 75);
 
+	FFTtime[iCh] = FFT_MeanTime(time[0], channel[iCh], NSAMPLES);
+	
 	// reconvert to "mV" with ADC factor
 	for(int s = 0; s < NSAMPLES; s++)
 	  channel[iCh][s] *= ADC;

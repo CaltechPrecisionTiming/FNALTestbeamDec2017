@@ -2,6 +2,7 @@
 #define Aux_HH
 
 #include <TGraphErrors.h>
+#include "TVirtualFFT.h"
 #include <TH1F.h>
 #include <TF1.h>
 #include <TCanvas.h>
@@ -19,9 +20,10 @@ static float amplificationFactor[nPoints] = { 27.9/1.37*10 , 26.8/1.37*10, 31.6/
 
 double GetAmplificationFactor ( double measuredAmplitude );
 TGraphErrors* WeierstrassTransform( short* channel, float* time, TString pulseName, double sigma = 1.0, bool makePlot = false );
-TGraphErrors* GetTGraph( double* channel, float* time );
-TGraphErrors* GetTGraph( float* channel, float* time );
-TGraphErrors GetTGraph( short* channel, float* time );
+TGraphErrors* GetTGraph( double* channel, double* time, int N=1024 );
+TGraphErrors* GetTGraph( double* channel, float* time, int N=1024 );
+TGraphErrors* GetTGraph( float* channel, float* time, int N=1024 );
+TGraphErrors GetTGraph( short* channel, float* time, int N=1024 );
 double GetGaussTime( TGraphErrors* pulse );
 void HighPassFilter( short* channel, double* filteredCurrent, float* time, double R = -1.0, double C = -1.0 );
 void NotchFilter( short* channel, double* filteredCurrent, float* time, double R = -1.0, double C = -1.0, double L = -1.0 );
@@ -49,6 +51,12 @@ float GetPulseIntegral(int peak, int nsamples, float *a, float *t);
 float ConstantThresholdTime(TGraphErrors * pulse, const float threshold);
 bool isRinging( int peak, short *a );
 bool isRinging( int peak, float *a );
+
+// from C. Rogan
+// TVirtualFFT *fftC2R = nullptr;
+// TVirtualFFT *fftR2C = nullptr;
+double FFT_MeanTime(float* time, float* channel, int N = 1024);
+double FFT_MeanTime(float* time, short* channel, int N = 1024);
 
 
 #endif
