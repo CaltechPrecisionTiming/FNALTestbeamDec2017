@@ -916,7 +916,7 @@ double FFT_MeanTime(float* time, short* channel, int N){
   for(int i = 0; i < N; i++)
     newchannel[i] = channel[i];
 
-  return FFT_MeanTime(time, channel, N);
+  return FFT_MeanTime(time, newchannel, N);
 }
 
 double FFT_MeanTime(float* time, float* channel, int N){
@@ -998,6 +998,8 @@ double FFT_MeanTime(float* time, float* channel, int N){
 
   delete pulse;
   delete fpeak;
+  delete fftR2C;
+  delete fftC2R;
   
   return timepeak;
 }
