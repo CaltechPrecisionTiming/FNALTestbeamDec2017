@@ -59,154 +59,164 @@ int main(int argc, char* argv[]) {
   cout << "TOFPETEventFileName = " << TOFPETEventFileName << "\n";
   cout << "outFileName = " << outFileName << "\n";
 
-  // //**********************************
-  // //First read in the NimPlus timestamps --> We don't use this anymore because it was giving errors
-  // //**********************************
-  // long triggerNumber=-1; 
-  // vector<long long> NimPlusTimestamp;
-  // vector<long long> NimPlusTimestampDelay;
-  // FILE* NimPlusInputFile = fopen( NimPlusInputFileName, "rb" );
-  // //cout << NimPlusInputFileName << endl;
-  // //int cnt = 0;
-  // //while(!feof(NimPlusInputFile) && cnt++ < 5)
-  // //{
+  const char *NimPlusInputFileName = "/eos/uscms/store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/NimPlus/RawDataSaver0NIM0_Run1771_0_Raw.dat";
 
-  // //  cout << fgetc(NimPlusInputFile) << endl;
-  // // }
-  // //return 0;
-  // //ifstream myfile;
-  // //myfile.open(NimPlusInputFileName, ios::in | ios::binary);
-  // int eventWordIndex=0;
-  // long long firstTimeEver = 0;
+  //**********************************
+  //First read in the NimPlus timestamps --> We don't use this anymore because it was giving errors
+  //**********************************
+  long triggerNumber=-1; 
+  vector<long long> NimPlusTimestamp;
+  vector<long long> NimPlusTimestampDelay;
+  FILE* NimPlusInputFile = fopen( NimPlusInputFileName, "rb" );
+  //cout << NimPlusInputFileName << endl;
+  //int cnt = 0;
+  //while(!feof(NimPlusInputFile) && cnt++ < 5)
+  //{
 
-  // firstTimeEver = 0x89abcdef;
+  //  cout << fgetc(NimPlusInputFile) << endl;
+  // }
+  //return 0;
+  //ifstream myfile;
+  //myfile.open(NimPlusInputFileName, ios::in | ios::binary);
+  int eventWordIndex=0;
+  long long firstTimeEver = 0;
 
-  // cout << "BYTE order test" << endl;
-  // cout << hex << firstTimeEver << dec << endl;
-  // for(int i=0;i<4;++i)
-  //   {
-  //     cout << hex << (unsigned int)(((unsigned char *)(&firstTimeEver))[i]) << dec << " -----\n";
-  //     (((unsigned char *)(&firstTimeEver))[i]) = i;
-  //   }
-  // cout << hex << firstTimeEver << dec << endl;
+  firstTimeEver = 0x89abcdef;
 
-  // for(int i=0;i<4;++i)
-  //   {
-  //     cout << hex << (unsigned int)(((unsigned char *)(&firstTimeEver))[i]) << dec << " -----\n";
-  //     (((unsigned char *)(&firstTimeEver))[i]) = 0;
-  //   }
-  // cout << hex << firstTimeEver << dec << endl;
+  cout << "BYTE order test" << endl;
+  cout << hex << firstTimeEver << dec << endl;
+  for(int i=0;i<4;++i)
+    {
+      cout << hex << (unsigned int)(((unsigned char *)(&firstTimeEver))[i]) << dec << " -----\n";
+      (((unsigned char *)(&firstTimeEver))[i]) = i;
+    }
+  cout << hex << firstTimeEver << dec << endl;
 
-  // firstTimeEver = 0;
+  for(int i=0;i<4;++i)
+    {
+      cout << hex << (unsigned int)(((unsigned char *)(&firstTimeEver))[i]) << dec << " -----\n";
+      (((unsigned char *)(&firstTimeEver))[i]) = 0;
+    }
+  cout << hex << firstTimeEver << dec << endl;
 
-  // bool isNewTrigger = false;
-  // int maxPackets = 999999999;
-  // for( int iPacket = 0; iPacket < maxPackets; iPacket++){ 
-  // //while(!feof(NimPlusInputFile)){
-  //   long tmpTrigger = 0;
-  //   long long tmpTimestampPart1 = 0;
-  //   long long tmpTimestampPart2 = 0;
-  //   long long tmpWord = 0;
+  firstTimeEver = 0;
+
+  bool isNewTrigger = false;
+  int maxPackets = 999999999;
+  for( int iPacket = 0; iPacket < maxPackets; iPacket++){ 
+  //while(!feof(NimPlusInputFile)){
+    long tmpTrigger = 0;
+    long long tmpTimestampPart1 = 0;
+    long long tmpTimestampPart2 = 0;
+    long long tmpWord = 0;
     
-  //   long tmp = 0;
-  //   long QuadNo=0;
-  //   long long t_diff=0;
-  //   //cout << "Event: " << iPacket << " : ";    
+    long tmp = 0;
+    long QuadNo=0;
+    long long t_diff=0;
+    //cout << "Event: " << iPacket << " : ";    
 
-  //   int x;
-  //   // int k=-4;
-  //   //if(iPacket<5){myfile>>x;cout<<static_cast<long>(x)<<endl;}
-  //   //if(iPacket<5){myfile>>x;cout<<static_cast<long>(x)<<endl;}
-  //   //unsigned char tmpC; 
-  //   fread( &QuadNo, 1, 1, NimPlusInputFile); //no. of quad words in each packet (1 quadword= 8 bytes= 64 bits)
-  //   if (debugLevel > 100) cout <<QuadNo << " ";
-  //   fread( &tmp, 1, 1, NimPlusInputFile); //packet type -- 1,2 or 3
-  //   if (debugLevel > 100) cout << tmp << " ";
-  //   fread( &tmp, 1, 1, NimPlusInputFile); // sequence ID -- increments by 1 each time
-  //   if (debugLevel > 100) cout << tmp << "\n ";
-  //   for(int i=0;i<QuadNo*2;i++){
+    int x;
+    // int k=-4;
+    //if(iPacket<5){myfile>>x;cout<<static_cast<long>(x)<<endl;}
+    //if(iPacket<5){myfile>>x;cout<<static_cast<long>(x)<<endl;}
+    //unsigned char tmpC; 
+    fread( &QuadNo, 1, 1, NimPlusInputFile); //no. of quad words in each packet (1 quadword= 8 bytes= 64 bits)
+    if (debugLevel > 100) cout <<QuadNo << " ";
+    fread( &tmp, 1, 1, NimPlusInputFile); //packet type -- 1,2 or 3
+    if (debugLevel > 100) cout << tmp << " ";
+    fread( &tmp, 1, 1, NimPlusInputFile); // sequence ID -- increments by 1 each time
+    if (debugLevel > 100) cout << tmp << "\n ";
+    for(int i=0;i<QuadNo*2;i++){
 
-  //     //read 32-bit words
-  //     tmpWord = 0;
-  //     fread( &tmpWord, sizeof(float), 1, NimPlusInputFile); 
-  //     if (debugLevel > 100) cout << "\t" << (eventWordIndex%6) << "-" <<  tmpWord << " ";
-  //     //cout << "(k=" << eventWordIndex << ") ";
+      //read 32-bit words
+      tmpWord = 0;
+      fread( &tmpWord, sizeof(float), 1, NimPlusInputFile); 
+      if (debugLevel > 100) cout << "\t" << (eventWordIndex%6) << "-" <<  tmpWord << " ";
+      //cout << "(k=" << eventWordIndex << ") ";
 
-  //     //this is the trigger number word
-  //     if (eventWordIndex%6==2) {
-  // 	//a new trigger
-  // 	if (tmpWord > triggerNumber) {
-  // 	  triggerNumber++;
-  // 	  isNewTrigger = true;
-  // 	  //if (debugLevel > 10) cout << "Trigger Number: " << tmpWord << " : ";
-  // 	}
-  //     }
+      //this is the trigger number word
+      if (eventWordIndex%6==2) {
+  	//a new trigger
+  	if (tmpWord > triggerNumber) {
+  	  triggerNumber++;
+  	  isNewTrigger = true;
+  	  //if (debugLevel > 10) cout << "Trigger Number: " << tmpWord << " : ";
+  	}
+      }
 
-  //     //first 32-bit word-part of the timestamp
-  //     if(eventWordIndex%6==4){
-  // 	if (isNewTrigger) {
+      //first 32-bit word-part of the timestamp
+      if(eventWordIndex%6==4){
+  	if (isNewTrigger) {
 	  
-  // 	  // if(firstTimeEver == 0 || 
-  // 	  //    (NimPlusTimestamp.size() && 
-  // 	  //     (tmpWord-NimPlusTimestamp[NimPlusTimestamp.size()-1])*3 > 1000000000))
-  // 	  //   firstTimeEver = tmpWord;
+  	  // if(firstTimeEver == 0 || 
+  	  //    (NimPlusTimestamp.size() && 
+  	  //     (tmpWord-NimPlusTimestamp[NimPlusTimestamp.size()-1])*3 > 1000000000))
+  	  //   firstTimeEver = tmpWord;
 
-  // 	  // if(NimPlusTimestamp.size() &&
-  // 	  //     NimPlusTimestamp[NimPlusTimestamp.size()-1] > tmpWord) {
-  // 	  //     cout << "????";
-  // 	  //     //tmpWord += ((long long)(1)<<32);
-  // 	  // }
-  // 	  tmpTimestampPart1 = tmpWord;	    	   
-  // 	}      
-  //     }
+  	  // if(NimPlusTimestamp.size() &&
+  	  //     NimPlusTimestamp[NimPlusTimestamp.size()-1] > tmpWord) {
+  	  //     cout << "????";
+  	  //     //tmpWord += ((long long)(1)<<32);
+  	  // }
+  	  tmpTimestampPart1 = tmpWord;	    	   
+  	}      
+      }
 
-  //     if(eventWordIndex%6==5){
-  // 	if (isNewTrigger) {  	
-  // 	  tmpTimestampPart2 = tmpWord;
+      if(eventWordIndex%6==5){
+  	if (isNewTrigger) {  	
+  	  tmpTimestampPart2 = tmpWord;
 	  
-  // 	  if (debugLevel > 100) cout << "-0x" << hex << tmpTimestampPart1 << dec << "\t\t-DIFF=" << 
-  // 				  ((tmpTimestampPart1-firstTimeEver)*3.0f)/1000000.0f << "ms ";
-  // 	  NimPlusTimestamp.push_back(tmpTimestampPart2*4294967296 + tmpTimestampPart1);
-  // 	  if (debugLevel > 100) cout << "\t FullTimeStamp = " << (tmpTimestampPart2*4294967296 + tmpTimestampPart1);
-  // 	  isNewTrigger = false;
+  	  if (debugLevel > 100) cout << "-0x" << hex << tmpTimestampPart1 << dec << "\t\t-DIFF=" << 
+  				  ((tmpTimestampPart1-firstTimeEver)*3.0f)/1000000.0f << "ms ";
+  	  NimPlusTimestamp.push_back(tmpTimestampPart2*4294967296 + tmpTimestampPart1);
+  	  if (debugLevel > 100) cout << "\t FullTimeStamp = " << (tmpTimestampPart2*4294967296 + tmpTimestampPart1);
+  	  isNewTrigger = false;
 
-  // 	}
+  	}
 	
-  // 	if (debugLevel > 100) cout << endl;
-  //     }
+  	if (debugLevel > 100) cout << endl;
+      }
 
-  //     if(eventWordIndex%6==5){
+      if(eventWordIndex%6==5){
   	
-  //     }
-  //     eventWordIndex++;
+      }
+      eventWordIndex++;
 
-  //   }
-  //   if (debugLevel > 100) cout << "\n--------------------------------------------------------------------------------\n";
-  //   // // check for end of file
-  //   if (feof(NimPlusInputFile)) break;
-  // }
+    }
+    if (debugLevel > 100) cout << "\n--------------------------------------------------------------------------------\n";
+    // // check for end of file
+    if (feof(NimPlusInputFile)) break;
+  }
 
-  // //timestamps are in units of clock cycles (3ns each step)
-  // long long tmpRunningTimestamp = 0;
-  // for (int i=0; i<NimPlusTimestamp.size();i++) {
-  //   // cout << "Trigger: " << i << " " << NimPlusTimestamp[i] << "\n";
-  //   if (i==0) {
-  //     NimPlusTimestampDelay.push_back(0);
-  //   } else {
-  //     //if (NimPlusTimestamp[i] - NimPlusTimestamp[i-1] > 0) {
-  // 	NimPlusTimestampDelay.push_back( (NimPlusTimestamp[i] - NimPlusTimestamp[i-1]) * 3); //delays are in units of ns
-  // 	//} else {
-  // 	//NimPlusTimestampDelay.push_back( (NimPlusTimestamp[i] + 4294967296 - NimPlusTimestamp[i-1]) * 3);
-  // 	//}
-  //   }
-  //   cout << "Trigger: " << i << " | " << NimPlusTimestamp[i] << " | " 
-  // 	 << (tmpRunningTimestamp +  NimPlusTimestampDelay[i])*1e-9 << " : " 
-  // 	 << NimPlusTimestampDelay[i]*1e-9 << "\n";
-  //   //if (i>1) {
-  //     tmpRunningTimestamp +=  NimPlusTimestampDelay[i];
-  //     //}
-  // }
+  //timestamps are in units of clock cycles (3ns each step)
+  long long tmpRunningTimestamp = 0;
+  for (int i=0; i<NimPlusTimestamp.size();i++) {
+    // cout << "Trigger: " << i << " " << NimPlusTimestamp[i] << "\n";
+    if (i==0) {
+      NimPlusTimestampDelay.push_back(0);
+    } else {
+      //if (NimPlusTimestamp[i] - NimPlusTimestamp[i-1] > 0) {
+  	NimPlusTimestampDelay.push_back( (NimPlusTimestamp[i] - NimPlusTimestamp[i-1]) * 3); //delays are in units of ns
+  	//} else {
+  	//NimPlusTimestampDelay.push_back( (NimPlusTimestamp[i] + 4294967296 - NimPlusTimestamp[i-1]) * 3);
+  	//}
+    }
+    // cout << "Trigger: " << i << " | " << NimPlusTimestamp[i] << " | " 
+    // 	 << (tmpRunningTimestamp +  NimPlusTimestampDelay[i])*1e-9 << " : " 
+    // 	 << NimPlusTimestampDelay[i]*1e-9 << "\n";
+    if (i>0 && NimPlusTimestamp[i] - NimPlusTimestamp[i-1] < 10000) {
+      cout << "Trigger: " << i << " | " << NimPlusTimestamp[i] << " | " 
+	   << NimPlusTimestamp[i] - NimPlusTimestamp[i-1] << " "
+	   << "\n";
+    }
+    //if (i>1) {
+      tmpRunningTimestamp +=  NimPlusTimestampDelay[i];
+      //}
+  }
 
+
+
+  return 0;
 
   //*************************************************************
   // Read the Timestamps from the tracker
