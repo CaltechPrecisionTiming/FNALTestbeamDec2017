@@ -2,6 +2,9 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <stdio.h>
+#include <dirent.h>
+#include <ctime>
 
 // ROOT includes
 #include <TROOT.h>
@@ -145,6 +148,137 @@ int main(int argc, char **argv) {
   if ( _configName != "" ) {
     configName = _configName;
   }
+
+  //**************************************
+  // run config stuff - C. Rogan
+  //**************************************
+  vector<string> sVAR;
+  sVAR.push_back("CH");
+  sVAR.push_back("Sensor");
+  sVAR.push_back("HV");
+  sVAR.push_back("Fluence");
+  sVAR.push_back("CB_X");
+  sVAR.push_back("CB_Y");
+  sVAR.push_back("DB_X");
+  sVAR.push_back("DB_Y");
+
+  int Nvar = sVAR.size();
+  
+  int rcNCH;
+  std::vector<int>    rcCH;
+  std::vector<string> rcSensor;
+  std::vector<int>    rcHV;
+  std::vector<float>  rcFluence;
+  std::vector<int>    rcCB_X;
+  std::vector<int>    rcCB_Y;
+  std::vector<int>    rcDB_X;
+  std::vector<int>    rcDB_Y;
+
+  TTree* runTree = new TTree("RunConfig", "RunConfig");
+  runTree->Branch("NCH", &rcNCH);
+  runTree->Branch("CH", &rcCH);
+  runTree->Branch("Sensor", &rcSensor);
+  runTree->Branch("HV", &rcHV);
+  runTree->Branch("Fluence", &rcFluence);
+  runTree->Branch("CB_X", &rcCB_X);
+  runTree->Branch("CB_Y", &rcCB_Y);
+  runTree->Branch("DB_X", &rcDB_X);
+  runTree->Branch("DB_Y", &rcDB_Y);
+  
+  std::string runconfigName = ParseCommandLine( argc, argv, "--run_config" );
+  if(runconfigName != ""){
+    ifstream cfile(runconfigName.c_str());
+
+    string line;
+    if(cfile.is_open()){
+      
+      std::vector<string> vS;
+      std::vector<int> vP;
+      
+      getline(cfile, line);
+      for(;;){
+	// Read into buffer
+	char sline[1000];
+	sprintf(sline, "%s", line.c_str());
+	// Break up header line by spaces
+	char* p = strtok(sline, " ");
+	while(p){
+	  for(int v = 0; v < Nvar; v++){
+	    if(string(p).find(sVAR[v]) != string::npos){
+	      int iP = string(p).find(sVAR[v]);
+	      vS.push_back(sVAR[v]);
+	      vP.push_back(iP);
+	      if(vS.size() > 1){
+		for(int ip = vS.size()-2; ip >= 0; ip++){
+		  if(vP[ip] > vP[ip+1]){
+		    vP[ip+1] = vP[ip];
+		    vS[ip+1] = vS[ip];
+		    vP[ip] = iP;
+		    vS[ip] = sVAR[v];
+		  } else {
+		    break;
+		  }
+		}
+	      }
+	    }
+	  }
+	  p = strtok(NULL, " ");
+	}
+	break;
+      }
+      int Nw = vS.size();
+      rcNCH = 0;
+      while(getline(cfile,line)){
+	std::stringstream ssline;
+	ssline << line;
+	for(int w = 0; w < Nw; w++){
+	  if(vS[w] == "CH"){
+	    rcCH.push_back(0);
+	    ssline >> rcCH[rcNCH];
+	  }
+	  if(vS[w] == "Sensor"){
+	    rcSensor.push_back("");
+	    ssline >> rcSensor[rcNCH];
+	  }
+	  if(vS[w] == "HV"){
+	    rcHV.push_back(0);
+	    ssline >> rcHV[rcNCH];
+	  }
+	  if(vS[w] == "Fluence"){
+	    rcFluence.push_back(0);
+	    ssline >> rcFluence[rcNCH];
+	  }
+	  if(vS[w] == "CB_X"){
+	    rcCB_X.push_back(0);
+	    ssline >> rcCB_X[rcNCH];
+	  }
+	  if(vS[w] == "CB_Y"){
+	    rcCB_Y.push_back(0);
+	    ssline >> rcCB_Y[rcNCH];
+	  }
+	  if(vS[w] == "DB_X"){
+	    rcDB_X.push_back(0);
+	    ssline >> rcDB_X[rcNCH];
+	  }
+	  if(vS[w] == "DB_Y"){
+	    rcDB_Y.push_back(0);
+	    ssline >> rcDB_Y[rcNCH];
+	  }
+	}
+	if(rcCB_X.size() < rcCH.size())
+	  rcCB_X.push_back(0);
+	if(rcCB_Y.size() < rcCH.size())
+	  rcCB_Y.push_back(0);
+	if(rcDB_X.size() < rcCH.size())
+	  rcDB_X.push_back(0);
+	if(rcDB_Y.size() < rcCH.size())
+	  rcDB_Y.push_back(0);
+
+	rcNCH++;
+      }
+      runTree->Fill();
+    }
+  }
   
   std::cout << "\n=== Parsing configuration file " << configName << " ===\n" << std::endl;
   Config config(configName);
@@ -248,6 +382,8 @@ int main(int argc, char **argv) {
   float constantThresholdTime[36];
   bool _isRinging[36];
 
+  int HV[36];
+
   float FFTtime[36];
  
   float xIntercept;
@@ -298,13 +434,18 @@ int main(int argc, char **argv) {
   tree->Branch("nTracks", &nTracks, "nTracks/I");
   tree->Branch("chi2", &chi2, "chi2/F");
 
+  tree->Branch("HV", HV, "HV[36]/I");
+
   // temp variables for data input
   uint   event_header;
   uint   temp[3];
   ushort samples[9][1024];
 
-  
-
+  // Fill HV values
+  for(int rc = 0; rc < 36; rc++)
+    HV[rc] = 0;
+  for(int rc = 0; rc < rcNCH; rc++)
+    HV[rcCH[rc]] = rcHV[rc];
 
   //*************************
   // Open Pixel Tree
@@ -361,9 +502,16 @@ int main(int argc, char **argv) {
     y2 = -999;
     chi2 = -999;
     nTracks=0;
-    for( int iPixelEvent = 0; iPixelEvent < pixelTree->GetEntries(); iPixelEvent++){ 
+    cout << "HERE" << endl;
+    int Npix = pixelTree->GetEntries();
+    for( int iPixelEvent = 0; iPixelEvent < Npix; iPixelEvent++){
+      cout << "event " << iPixelEvent << endl;
       pixelTree->GetEntry(iPixelEvent);
+      cout << "out" << endl;
+      cout << "in " << pixelEvent.trigger << endl;
+      cout << "in" << endl;
       if (pixelEvent.trigger == iEvent) {
+	cout << "huh" << endl;
 	nTracks++;
 	xIntercept = pixelEvent.xIntercept;
 	yIntercept = pixelEvent.yIntercept;
@@ -377,7 +525,7 @@ int main(int argc, char **argv) {
       }
     }
    
-    
+    cout << "and HERE" << endl;
 
     if ( iEvent % 100 == 0 ) {
       if (nEvents >= 0) {
@@ -717,6 +865,9 @@ int main(int argc, char **argv) {
   fclose(fpin);
   cout << "\nProcessed total of " << nGoodEvents << " events\n";
 
+  file->cd();
+  runTree->Write();
+  
   file->Write();
   file->Close();
 
