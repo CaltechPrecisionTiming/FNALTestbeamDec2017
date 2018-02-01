@@ -502,16 +502,10 @@ int main(int argc, char **argv) {
     y2 = -999;
     chi2 = -999;
     nTracks=0;
-    cout << "HERE" << endl;
     int Npix = pixelTree->GetEntries();
     for( int iPixelEvent = 0; iPixelEvent < Npix; iPixelEvent++){
-      cout << "event " << iPixelEvent << endl;
       pixelTree->GetEntry(iPixelEvent);
-      cout << "out" << endl;
-      cout << "in " << pixelEvent.trigger << endl;
-      cout << "in" << endl;
       if (pixelEvent.trigger == iEvent) {
-	cout << "huh" << endl;
 	nTracks++;
 	xIntercept = pixelEvent.xIntercept;
 	yIntercept = pixelEvent.yIntercept;
@@ -524,8 +518,6 @@ int main(int argc, char **argv) {
 	y2 = yIntercept + ySlope*(1445000);
       }
     }
-   
-    cout << "and HERE" << endl;
 
     if ( iEvent % 100 == 0 ) {
       if (nEvents >= 0) {
