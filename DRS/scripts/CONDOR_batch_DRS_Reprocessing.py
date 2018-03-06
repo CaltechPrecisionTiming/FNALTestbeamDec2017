@@ -67,5 +67,5 @@ if __name__ == "__main__":
             line = line.split()
             run_number = line[0]
             write_sh(srcdir+"Run"+run_number+".sh", run_number, ROOT+"Run"+run_number+".root", logdir+"Run"+run_number+".log")
-            os.system('condor_submit '+srcdir+name+".sh")
+            os.system('condor_submit '+srcdir+"Run"+run_number+".sh")
     
