@@ -1,0 +1,3 @@
+CH	Sensor name	HV[V]	Fluence	CB_X	CB_Y
+4	HPK_50DPIX	-300	0	12	44
+5	HPK_50DPIX	-300	0	12	44
