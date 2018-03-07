@@ -57,8 +57,8 @@ if __name__ == "__main__":
     os.system("mkdir -p "+TARGET)
     os.system("mkdir -p "+logdir)
     os.system("mkdir -p "+jdldir)
-    os.system("rm -rf "+ROOT)
-    os.system("mkdir -p "+ROOT)
+    os.system("rm -rf /eos/uscms"+ROOT)
+    os.system("mkdir -p /eos/uscms"+ROOT)
 
     with open(listfile,'r') as f:
         inputlist = f.readlines()

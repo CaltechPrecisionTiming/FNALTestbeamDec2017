@@ -11,7 +11,7 @@ runNum=$1
 output=$2
 echo "Processing DRS/Pixel data for run ${runNum} in location ${output}"
 echo "Processing DRS/Pixel data for run ${runNum} in location ${output}" > ${runNum}.log
-xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}
+xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}.new
 
 
 
