@@ -557,7 +557,7 @@ int main(int argc, char* argv[]) {
       if(pixelEvent.trigger==iEvent){
 	//cout<<"Found Match with DRS!\n";
 	//cout<<pixelEvent.trigger<<endl;
-	DRSpixMatch.push_back(iEvent);
+	DRSpixMatch.push_back(iPixelEvent);
 	foundMatch=true;
 	break; // this drs event already matched, no need to further loop over all pixel events
       }
