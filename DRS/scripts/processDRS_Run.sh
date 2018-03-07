@@ -11,15 +11,15 @@ runNum=$1
 output=$2
 echo "Processing DRS/Pixel data for run ${runNum} in location ${output}"
 
-FILES=$(nsls root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/ | grep RawDataSaver0CMSVMETiming_Run${runNum})
+FILES=`nsls root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/ | grep RawDataSaver0CMSVMETiming_Run${runNum})`
 for f in $FILES
 do
     xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/${f} .
 done
 echo $FILES > ${runNum}.log
 xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}
-
-
+ls * > ${runNum}.second
+xrdcp ${runNum}.second root://cmseos.fnal.gov/${output}.2
 
 
 
