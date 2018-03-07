@@ -1,0 +1,6 @@
+CH	Sensor name	HV[V]	Fluence	DB_X	DB_Y		
+1	FBK_W15_1.5e15	-460	1.5e15
+2	CNM_S1    	-50	0	27	31
+3	HPK_50DPIX  	-250	0			
+10	LYSO_SiPM	-68.5	0	27	31
+

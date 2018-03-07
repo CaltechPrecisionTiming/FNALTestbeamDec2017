@@ -1,0 +1,5 @@
+CH	Sensor name	HV[V]	Fluence	DB_X	DB_Y		
+1	FBK_W8_SB_LGAD	-350	0	33	35
+2	HPK_35u_SC	-150	0	33	35
+3	FBK_W1_4e14GRf	-195	4e14		
+4	FBK_W15_4e14GRf	-195	4e14		

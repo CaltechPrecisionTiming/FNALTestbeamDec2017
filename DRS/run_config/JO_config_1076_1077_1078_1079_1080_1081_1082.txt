@@ -1,0 +1,7 @@
+CH	Sensor name	HV[V]	Fluence	DB_X	DB_Y
+1	HPK_50DPIX	-300	0		
+2	HPK_50DPIX	-300	0		
+3	HPK_50DPIX	-300	0		
+4	FBK_W8_LGAD	-300	0		
+5	FBK_W8_PIN	-300	0		
+			
