@@ -16,7 +16,7 @@ for f in $FILES
 do
     xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/${f} .
 done
-ls * > ${runNum}.log
+echo $FILES > ${runNum}.log
 xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}
 
 
