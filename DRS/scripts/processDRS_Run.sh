@@ -14,8 +14,8 @@ echo "Processing DRS/Pixel data for run ${runNum} in location ${output}"
 FILES=$(eos ls root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/ | grep RawDataSaver0CMSVMETiming_Run${runNum})
 for f in $FILES
 do
-    echo xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/$f
-    xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/$f > ${runNum}.log
+    echo xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/${f}
+    xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/${f} > ${runNum}.log
 done
 #ls * > ${runNum}.log
 xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}
