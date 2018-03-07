@@ -16,6 +16,7 @@ for f in $FILES
 do
     xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/${f} .
 done
+xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/RawDataSaver0CMSVMETiming_Run1208_0_Raw.dat .
 echo $FILES > ${runNum}.log
 xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}
 ls * > ${runNum}.second
