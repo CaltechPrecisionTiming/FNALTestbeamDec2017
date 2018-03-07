@@ -10,8 +10,11 @@ NC='\033[0m' # No Color
 runNum=$1
 output=$2
 echo "Processing DRS/Pixel data for run ${runNum} in location ${output}"
-echo "Processing DRS/Pixel data for run ${runNum} in location ${output}" > ${runNum}.log
-xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}.new
+
+xrdcp root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/RawData*Run${runNum}_*.dat .
+
+ls RawData*Run${runNum}_*.dat > ${runNum}.log
+xrdcp ${runNum}.log root://cmseos.fnal.gov/${output}
 
 
 
