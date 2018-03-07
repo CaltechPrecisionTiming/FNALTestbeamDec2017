@@ -9,7 +9,7 @@ home = os.environ['HOME']
 #######################################
 RUN_DIR = pwd
 TEMP = pwd
-EXE  = "processDRS_Run.sh"
+EXE  = "scripts/processDRS_Run.sh"
 OUT  = "/store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/"
 TARGET = "default"
 QUEUE = ""
