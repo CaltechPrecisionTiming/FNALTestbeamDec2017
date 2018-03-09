@@ -62,7 +62,6 @@ echo "Processing DRS data file"
 echo
 
 echo "Copying DRS data file"
-xrdcp OUTPUT.root://cmseos.fnal.gov/${output}
-ls * 
+xrdcp OUTPUT.root root://cmseos.fnal.gov/${output}
 
 
