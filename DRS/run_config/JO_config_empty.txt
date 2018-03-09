@@ -1,0 +1,1 @@
+CH	Sensor name	HV[V]	Fluence	DB_X	DB_Y
