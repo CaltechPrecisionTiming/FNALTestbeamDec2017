@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import os, sys, commands, time
+import os, sys, commands, time, glob
 
 #look for the current directory
 #######################################
@@ -14,7 +14,7 @@ OUT  = "/store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/"
 TARGET = "default"
 QUEUE = ""
 
-def write_jdl(jdlfile,run,ofile,lfile):
+def write_jdl(jdlfile,run,dfile,rcfile,ofile,lfile,efile):
     fjdl = open(jdlfile,'w')
     fjdl.write('universe = vanilla \n')
     fjdl.write('executable = '+EXE+" \n")
@@ -23,6 +23,9 @@ def write_jdl(jdlfile,run,ofile,lfile):
     fjdl.write(run+' ')
     fjdl.write(ofile+" \n")
     fjdl.write('output = '+lfile+" \n")
+    fjdl.write('Error = '+efile+" \n")
+    fjdl.write('Transfer_Input_Files = '+dfile+", "+rcfile+", config/December2017_LGADOnly.config, dat2rootPixels, calib/calib.tar \n")
+    fjdl.write('Transfer_Output_Files = "" \n')
     fjdl.write('queue \n')
     fjdl.close()
 
@@ -51,12 +54,16 @@ if __name__ == "__main__":
     TARGET  = RUN_DIR+"/"+TARGET+"/"
     jdldir  = TARGET+"jdl/"
     logdir  = TARGET+"log/"
+    errdir  = TARGET+"err/"
+    condir  = TARGET+"config/"
 
     # make output folders
     os.system("rm -rf "+TARGET)
     os.system("mkdir -p "+TARGET)
     os.system("mkdir -p "+logdir)
     os.system("mkdir -p "+jdldir)
+    os.system("mkdir -p "+errdir)
+    os.system("mkdir -p "+condir)
     os.system("rm -rf /eos/uscms"+ROOT)
     os.system("mkdir -p /eos/uscms"+ROOT)
 
@@ -65,6 +72,12 @@ if __name__ == "__main__":
         for line in inputlist:
             line = line.split()
             run_number = line[0]
-            write_jdl(jdldir+"Run"+run_number+".jdl", run_number, ROOT+"Run"+run_number+".root", logdir+"Run"+run_number+".log")
+            os.system('eos ls root://cmseos.fnal.gov//store/user/cmstestbeam/ETL/MT6Section1Data/122017/OTSDAQ/CMSTiming/ | grep RawDataSaver0CMSVMETiming_Run'+run_number+" > "+condir+"Run"+run_number+".list")
+            rclist = glob.glob('run_config/*'+run_number+"*")
+            if len(rclist) > 0:
+                os.system('cp '+rclist[0]+" "+condir+"Run"+run_number+".config")
+            else :
+                os.system('cp run_config/JO_config_empty.txt '+condir+"Run"+run_number+".config")
+            write_jdl(jdldir+"Run"+run_number+".jdl", run_number, condir+"Run"+run_number+".list", condir+"Run"+run_number+".config", ROOT+"Run"+run_number+".root", logdir+"Run"+run_number+".log", errdir+"Run"+run_number+".stderr")
             os.system('condor_submit '+jdldir+"Run"+run_number+".jdl")
     
