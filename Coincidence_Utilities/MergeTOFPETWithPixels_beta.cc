@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 
   //parse input list to get names of ROOT files
   if(argc < 4){
-    cerr << "usage MergeTOFPETWithDRS <PixelFile> <TrackerTimingFile> <TOFPETEventFile> <DRSFile> <OutputFile>" << endl;
+    cerr << "usage MergeTOFPETWithDRS <PixelFile> <TOFPETEventFile> <DRSFile> <OutputFile>" << endl;
     return -1;
   }
   int debugLevel = -1;
@@ -82,13 +82,11 @@ int main(int argc, char* argv[]) {
   ushort samples[9][1024];
 
   const char *PixelInputFileName = argv[1];
-  const char *TrackerTimingInputFileName = argv[2];
-  const char *TOFPETEventFileName   = argv[3];
-  const char *DRSFileName   = argv[4];
-  const char *outFileName   = argv[5];
+  const char *TOFPETEventFileName   = argv[2];
+  const char *DRSFileName   = argv[3];
+  const char *outFileName   = argv[4];
 
   cout << "PixelInputFile = " << PixelInputFileName << "\n";
-  cout << "TrackerTimingInputFileName = " << TrackerTimingInputFileName << "\n";
   cout << "TOFPETEventFileName = " << TOFPETEventFileName << "\n";
   cout << "DRSFileName = " << DRSFileName << "\n";
   cout << "outFileName = " << outFileName << "\n";
@@ -252,48 +250,6 @@ int main(int argc, char* argv[]) {
 
 
   return 0;*/
-  /*
-  //*************************************************************
-  // Read the Timestamps from the tracker
-  //*************************************************************
-  ifstream TrackerTimingInputFile( TrackerTimingInputFileName );
-  assert (TrackerTimingInputFile.is_open());
-  vector<double> TrackerTimestamps;
-  vector<double> TrackerTimestampsBCO;  
-  string line;
-  while ( getline (TrackerTimingInputFile,line) ) {
-    istringstream iss(line);
-    string temp;
-    long tempBCOstamp;
-    double tempTimestamp;
-    iss >> temp >> temp >> temp >> tempBCOstamp >> temp >> tempTimestamp;
-    //TrackerTimestamps.push_back(tempTimestamp);
-    TrackerTimestampsBCO.push_back(tempBCOstamp);
-  }
-  TrackerTimingInputFile.close();
-  
-  for (int i=0; i<TrackerTimestampsBCO.size();i++) {
-    if (TrackerTimestampsBCO[i] >= TrackerTimestampsBCO[0]) {
-      TrackerTimestamps.push_back( (TrackerTimestampsBCO[i]-TrackerTimestampsBCO[0])*76.7990858*1e-9);
-    } else {
-       TrackerTimestamps.push_back( (TrackerTimestampsBCO[i] + 281474976710656 -TrackerTimestampsBCO[0])*76.7990858*1e-9);     
-    }
-    cout.precision(10);
-    //cout << "Timestamp : " << i << " : " << TrackerTimestamps[i] << "\n";
-  }
-
-  //reset the counter whenever there is more than 1 second between one event and the next
-  vector<double> TrackerTimestampsResetted;
-  int previousResetIndex = 0;
-  for (int i=0; i<TrackerTimestamps.size();i++) {    
-    TrackerTimestampsResetted.push_back(TrackerTimestamps[i]);
-    if (i==0) continue;    
-    //cout << "test: " << i << " : " << TrackerTimestamps[i] << " " << TrackerTimestamps[i-1] << " " << TrackerTimestamps[i] - TrackerTimestamps[i-1] << "\n";
-    if (TrackerTimestamps[i] - TrackerTimestamps[i-1] > 1.0) previousResetIndex = i;
-    TrackerTimestampsResetted[i] = TrackerTimestamps[i] - TrackerTimestamps[previousResetIndex];
-    //cout << "Tracker Timer: " << i << " : " << TrackerTimestampsResetted[i] << "\n";
-  }
-  */
   
 
   //*************************
@@ -428,7 +384,6 @@ int main(int argc, char* argv[]) {
       unsigned result = bitmask & event_header;
       //cout << "Group Trigger time: " << event_header << " : " << bitmask << " : " << result << "\n";
       DRSTimestamp.push_back(result);
-      //cout<<iEvent<<endl;
     }
   }
     
@@ -436,8 +391,6 @@ int main(int argc, char* argv[]) {
   // processing this one, discarding it
   if(corruption) continue;
   }
-   //Timing debugging
-  //cout<<"DRSTimeStamp Size:"<<DRSTimestamp.size()<<endl;
    long long tmpRunningTimestamp = 0;
    vector <long long> DRSRunningTimestamp;
    for (int i=0; i<DRSTimestamp.size();i++) {
@@ -465,25 +418,36 @@ int main(int argc, char* argv[]) {
   vector<long long> DRSTimestampsResetted;
   int previousResetIndex = 0;
   for (int i=0; i<DRSTimestamp.size();i++) {    
-    DRSTimestampsResetted.push_back(DRSTimestamp[i]);
-    if (i==0 /*&& DRSTimestampDelay[i]*1e-9 > 0.05 && DRSTimestampDelay[i+1]*1e-9 > 0.05 && DRSTimestampDelay[i+2]*1e-9 > 0.05*/){
-      DRSspillIndex.push_back(0);
+    //DRSTimestampsResetted.push_back(DRSTimestamp[i]);
+    if (i==0){
+      DRSTimestampsResetted.push_back(0);
       continue;    
     }
     //cout << "test: " << i << " : " << DRSTimestamp[i]*8.5*1e-9 << " " << DRSTimestamp[i-1]*8.5*1e-9 << " " << (DRSTimestamp[i] - DRSTimestamp[i-1])*8.5*1e-9 << "\n";
-    if (DRSTimestampDelay[i]*1e-9 > 0.05) {previousResetIndex = i; 
-
-      /*if(DRSTimestampDelay[i+1]*1e-9 > 0.05 && DRSTimestampDelay[i+2]*1e-9 > 0.05)*/DRSspillIndex.push_back(i);
-      //cout<<"I'm at end of 1st DRS spill: "<<i<<endl;if(i>3)break;
-
-
-      //cout<<DRSRunningTimestamp[i]*1e-9<<endl;
-    }
-    if(DRSTimestamp[i] - DRSTimestamp[previousResetIndex] > 0) DRSTimestampsResetted[i] = (DRSTimestamp[i] - DRSTimestamp[previousResetIndex])*8.5;
-    else DRSTimestampsResetted[i] = (DRSTimestamp[i] + 1073741824 - DRSTimestamp[previousResetIndex])*8.5;
-    //cout << "DRS Timer: " << i << " : " <<DRSTimestamp[i]*1e-9<< " : " <<DRSTimestamp[previousResetIndex]*1e-9<< " : " << DRSRunningTimestamp[i]*1e-9 <<" : "<<DRSTimestampsResetted[i]*1e-9 << "\n";
+    long long DRSReset=-9999;
+    if (DRSTimestampDelay[i]*1e-9 > 0.05 ) previousResetIndex = i; 
+    if(DRSTimestamp[i] - DRSTimestamp[previousResetIndex] > 0) DRSReset = (DRSTimestamp[i] - DRSTimestamp[previousResetIndex])*8.5;
+    else DRSReset = (DRSTimestamp[i] + 1073741824 - DRSTimestamp[previousResetIndex])*8.5;
+    
+    DRSTimestampsResetted.push_back(DRSReset);
+    //cout << "DRS Timer: " << i << " : " <<DRSTimestamp[i]*1e-9<< " : " <<DRSTimestamp[previousResetIndex]*1e-9<< " : " << DRSRunningTimestamp[i]*1e-9 <<" : "<<DRSTimestampsResetted[i]*1e-9 <<" : "<<DRSTimestampDelay[i]*1e-9<< "\n";
   } 
-  //for (int i=0; i<DRSspillIndex.size();i++) if(i<5)cout<<"Spill "<<i+1<<" : Index - "<<DRSspillIndex[i]<<" ,Time - "<<DRSTimestamp[i]*1e-9<<" ,TimeElapsed - "<<DRSRunningTimestamp[i]*1e-9<<endl;
+  for (int i=0; i<DRSTimestamp.size();i++){
+    if(i==0 && DRSTimestampsResetted[1]*1e-9<0.05 && DRSTimestampsResetted[2]*1e-9<0.1){
+      DRSspillIndex.push_back(0);
+      DRSTimestampsResetted[i]=0;
+      DRSTimestampDelay[i]=0;
+    }
+      
+    if(DRSTimestampDelay[i]*1e-9 > 0.05 && DRSTimestampsResetted[i]*1e-9>4.0 && DRSTimestampsResetted[i+1]*1e-9<0.05 && DRSTimestampsResetted[i+2]*1e-9<0.1){
+      DRSspillIndex.push_back(i);
+      DRSTimestampsResetted[i]=0;
+      DRSTimestampDelay[i]=0;
+    }
+    //cout << "DRS Timer: " << i << " : "<<DRSRunningTimestamp[i]*1e-9<<" : "<<DRSTimestampsResetted[i]*1e-9 <<" : "<<DRSTimestampDelay[i]*1e-9<< "\n";
+  }
+  
+  //for (int i=0; i<DRSspillIndex.size();i++) cout<<"Spill "<<i+1<<" : Index - "<<DRSspillIndex[i]<<" ,Time - "<<DRSTimestamp[i]*1e-9<<" ,TimeElapsed - "<<DRSRunningTimestamp[i]*1e-9<<" "<<DRSTimestampDelay[i]*1e-9<<endl;
 
   //cout<<"====================================================================================================\n";
   //*************************************************************
@@ -566,12 +530,7 @@ int main(int argc, char* argv[]) {
   }
   vector<long long> TOFPETTimestamp;
   vector<long long> TOFPETTimestampDelay;
-  long long previousTimestamp_TOFPET = 0;
-  long long previousTimestamp2_TOFPET = 0;
-  long long previousTimestamp3_TOFPET = 0;
-  long long previousTimestamp4_TOFPET = 0;
-  long long previousTimestamp5_TOFPET = 0;
-  long long previousTimestamp6_TOFPET = 0;
+  long long previousTimestamp_TOFPET;
   long long FirstEventTimeTOFPET = 0;
   int TriggerIndexTOFPET = 0;
   int PreviouslyMatchedTriggerNumber = -1;
@@ -582,48 +541,42 @@ int main(int argc, char* argv[]) {
   double tElapsedSincePreviousTrigger;
   vector <double> timeElapsed;
   vector <double> timeElapsedResetted;
-  vector<double> spillTime;
+  vector<int> TOFPETEvent;
   for(int q=0; q < TOFPETEventTree->GetEntries(); q++) {
     
     TOFPETEventTree->GetEntry(q);
-    //if(q+1==TOFPETEventTree->GetEntries())cout<<q<<" "<<event<<endl;
+     //if(q+1==TOFPETEventTree->GetEntries())cout<<q<<" "<<event<<endl;
+    
     int MatchedTriggerIndex = -1;
+   
     if (chEnergy[32] != -9999) {
       TOFPETTimestamp.push_back(chTime[32]);
       if (TriggerIndexTOFPET == 0) {
 	FirstEventTimeTOFPET = chTime[32];
-	TOFPETPreviousResetTime = chTime[32]*1e-12*0.96;
+	TOFPETPreviousResetTime = 0;
 	previousTimestamp_TOFPET = chTime[32];
-	TOFPETspillIndex.push_back(0);
-	spillTime.push_back(0);
-	timeElapsed.push_back(0);
 	timeElapsedResetted.push_back(0);
-	timeElapsedSincePreviousTrigger.push_back(0);
       }
-      tElapsedSincePreviousTrigger = (chTime[32] - previousTimestamp_TOFPET)*1e-12*0.96;
-      timeElapsedSincePreviousTrigger.push_back((chTime[32] - previousTimestamp_TOFPET)*1e-12*0.96);
+      tElapsedSincePreviousTrigger = (chTime[32] - previousTimestamp_TOFPET)*1e-12;
+      timeElapsedSincePreviousTrigger.push_back((chTime[32] - previousTimestamp_TOFPET)*1e-12);
       previousTimestamp_TOFPET = chTime[32];
  
-      double tElap=(chTime[32] - FirstEventTimeTOFPET)*1e-12*0.96;
-      timeElapsed.push_back((chTime[32] - FirstEventTimeTOFPET)*1e-12*0.96); 
+      double tElap=(chTime[32] - FirstEventTimeTOFPET)*1e-12;
+      timeElapsed.push_back((chTime[32] - FirstEventTimeTOFPET)*1e-12); 
       
-      //reset timer if more than 1 second since last trigger
-      if (tElapsedSincePreviousTrigger > 1.0) {
-	//cout<<" I'm at end of  spill "<<q<<endl;
-	//break;
+      //reset timer if more than 0.1 second since last trigger
+      if (tElapsedSincePreviousTrigger > 0.1) {
 	TOFPETPreviousResetIndex = q;
-	TOFPETspillIndex.push_back(q);
 	TOFPETPreviousResetTime = tElap;
-	spillTime.push_back(tElap);
       }
 
       double timeElapsedReset = 0;
       if (TriggerIndexTOFPET > 0){
 	timeElapsedReset = tElap - TOFPETPreviousResetTime;
 	timeElapsedResetted.push_back(timeElapsedReset);
-      }
+	 }
     
-      
+      TOFPETEvent.push_back(q);
 
       if (debugLevel > 100) {
 	cout << "Trigger:\t " << TriggerIndexTOFPET << " \t " << chTime[32] << " \t " 
@@ -633,71 +586,84 @@ int main(int argc, char* argv[]) {
 	   << TOFPETPreviousResetTime << "\t"
 	   << "\n"; 
 	}
-
-      //if (q==0)cout<<"First spill end: TOFPET time - "<<timeElapsedResetted<<" , DRS Time : "<< DRSTimestampsResetted[0]<<endl;
-      //Try to find matching trigger in Tracking timestamps
-      bool stopSearching = false;
-      double diff=9999;
-      for (int p=PreviouslyMatchedTriggerNumber+1; p<DRSTimestamp.size() && !stopSearching; p++) {
-	if (debugLevel > 100) {
-	  cout << "TOFPET Event " << q << " " << tElap << " , " << timeElapsedReset
-	       << " -> " << p << " " << DRSRunningTimestamp[p]*1e-9*1.01051 << " , " << DRSTimestampsResetted[p]*1e-9*1.01051
-	       << " | " << fabs(DRSRunningTimestamp[p]*1e-9*1.01051-tElap) << " , " 
-	       << fabs(DRSTimestampsResetted[p]*1e-9*1.01051 - timeElapsedReset) << " "
-	       << "\n";
-	   }
-	if ( fabs(DRSRunningTimestamp[p]*1e-9*1.01051-tElap) < 0.005 && fabs(DRSRunningTimestamp[p]*1e-9*1.01051-tElap) <diff && DRSpixMatch[p]!=-9999) {	 
-	  if (debugLevel > 100) cout << "matched\n";
-	  
-	  if (debugLevel > 100) {
-	  cout << "TOFPET Event " << q << " " << tElap << " , " << timeElapsedReset
-               << " -> " << p << " " << DRSRunningTimestamp[p]*1e-9*1.01051 << " , " << DRSTimestampsResetted[p]*1e-9*1.01051
-               << " | " << fabs(DRSRunningTimestamp[p]*1e-9*1.01051-tElap) << " , "
-               << fabs(DRSTimestampsResetted[p]*1e-9*1.01051 - timeElapsedReset) << " "
-               << "\n";
-	  }
-	  diff=fabs(DRSRunningTimestamp[p]*1e-9*1.01051-tElap);
-	  MatchedTriggerIndex = p;
-	  PreviouslyMatchedTriggerNumber = p;
-	  
-	} else {
-	  if (debugLevel > 100) cout << "BAD!!\n";
-	  if ( DRSRunningTimestamp[p]*1e-9*1.01051-tElap > 1.5) {
-	    stopSearching = true;
-	  
-	  }
-	}
-	}
-      
-      if (debugLevel > 100) {
-	cout << "Matched : " << MatchedTriggerIndex << "\n";
-	if (stopSearching) cout << "stopped searching, skip events\n";
-      }
-	
       TriggerIndexTOFPET++;
      
     }
-  
-    //****************************************
-    // Write output if matched
-    //****************************************
-     if (MatchedTriggerIndex >= 0) {
-       cout<<MatchedTriggerIndex<<endl;
-      ntracks = 0;
-      for( int iPixelEvent = 0; iPixelEvent < PixelTree->GetEntries(); iPixelEvent++){ 
-	PixelTree->GetEntry(iPixelEvent);
-	if (pixelEvent.trigger == MatchedTriggerIndex) {
-	  xIntercept = pixelEvent.xIntercept;
-	  yIntercept = pixelEvent.yIntercept;
-	  xSlope = pixelEvent.xSlope;
-	  ySlope = pixelEvent.ySlope;
-	  x1 = xIntercept + xSlope*(-50000);
-	  y1 = yIntercept + ySlope*(-50000);
-	  x2 = xIntercept + xSlope*(50000);
-	  y2 = yIntercept + ySlope*(50000);
-	  ntracks++;
-	}
-      } //loop over all pixel events
+  } // loop over TOFPET events
+  for(int i=0;i<timeElapsedResetted.size();i++){
+    if(i==0 && timeElapsedSincePreviousTrigger[i+1]<0.1 && timeElapsedSincePreviousTrigger[i+2]<0.1){
+      TOFPETspillIndex.push_back(TOFPETEvent[i]);
+      timeElapsedSincePreviousTrigger[i]=0;
+      timeElapsedResetted[i]=0;
+    }
+    if(timeElapsedResetted[i]<4. && timeElapsedSincePreviousTrigger[i]>0.1 && timeElapsedSincePreviousTrigger[i+1]<0.1 && timeElapsedSincePreviousTrigger[i+2]<0.1){
+      TOFPETspillIndex.push_back(TOFPETEvent[i]);
+      timeElapsedSincePreviousTrigger[i]=0;
+      timeElapsedResetted[i]=0;
+    }
+    /*cout << "Trigger:\t " << i  << " \t " 
+  	   << timeElapsed[i] << " \t " 
+  	   << timeElapsedResetted[i] << " \t " 
+	   << timeElapsedSincePreviousTrigger[i] << "\t"
+	   << "\n"; 
+    */	
+
+  }
+  /*    for(int i=0; i<TOFPETspillIndex.size();i++){
+    cout<<" TOFPET Event: "<<TOFPETspillIndex[i]<<" ";
+    for(int j=0;j<TOFPETEvent.size();j++){
+      if(TOFPETspillIndex[i]==TOFPETEvent[j])
+	cout<<timeElapsed[j]<<" "<<timeElapsedResetted[j]<<" "<<timeElapsedSincePreviousTrigger[j]<<endl;
+    }
+    }*/
+  for(int i=0; i<TOFPETspillIndex.size();i++){
+    int evtstart=-99;
+    for(int j=0;j<TOFPETEvent.size();j++){
+      if(TOFPETspillIndex[i]==TOFPETEvent[j]){
+	evtstart=j;
+	break;
+      }
+    }
+    PreviouslyMatchedTriggerNumber=DRSspillIndex[i]-1;
+    //cout<<"==============================================================================\n";
+    for(int k=evtstart;k<TOFPETEvent.size() && TOFPETEvent[k]<TOFPETspillIndex[i+1];k++){
+      bool stopSearching=false;
+      int MatchedTriggerIndex = -1;
+      if(timeElapsedSincePreviousTrigger[k]<0.1 && timeElapsedResetted[k]<4.){
+	double diff=9999;
+	for(int iEvent=PreviouslyMatchedTriggerNumber+1;iEvent<DRSspillIndex[i+1] && !stopSearching;iEvent++){
+
+	  if (debugLevel > 100) {
+	    cout << "TOFPET Event " << k << " , " << timeElapsedResetted[k]<<" "<<timeElapsedSincePreviousTrigger[k]
+		 << " -> " << iEvent << " , " << DRSTimestampsResetted[iEvent]*1e-9<<" "
+		 <<DRSTimestampDelay[iEvent]*1e-9<<" | " 
+	       << fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k]) << ", "
+		 << fabs(DRSTimestampDelay[iEvent]*1e-9-timeElapsedSincePreviousTrigger[k])<<" "<<DRSpixMatch[iEvent]<<"\n";
+	    }
+	    if ( fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])<0.002 && DRSpixMatch[iEvent]!=-9999 && diff>fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])) {
+	    PreviouslyMatchedTriggerNumber = iEvent;
+	    MatchedTriggerIndex = iEvent;
+	    //cout<<"xxxxxxxxxxxxxxx    Matched : "<<PreviouslyMatchedTriggerNumber<<endl;
+	    diff=fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k]);
+	  }
+	  else{
+	    if(fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])>0.1)stopSearching=true;
+	  }
+	}//for DRS loop
+      }//if(timeElapsedSincePreviousTrigger[k]<0.1 && timeElapsedResetted[k]<4.){
+      TOFPETEventTree->GetEntry(TOFPETEvent[k]);
+      if (MatchedTriggerIndex >= 0) {
+       ntracks = 0;
+       PixelTree->GetEntry(DRSpixMatch[MatchedTriggerIndex]);
+       xIntercept = pixelEvent.xIntercept;
+       yIntercept = pixelEvent.yIntercept;
+       xSlope = pixelEvent.xSlope;
+       ySlope = pixelEvent.ySlope;
+       x1 = xIntercept + xSlope*(-50000);
+       y1 = yIntercept + ySlope*(-50000);
+       x2 = xIntercept + xSlope*(50000);
+       y2 = yIntercept + ySlope*(50000);
+       ntracks++;
     } else {
       xIntercept = -999;
       yIntercept = -999;
@@ -709,13 +675,10 @@ int main(int argc, char* argv[]) {
       y2 = -999;  
       ntracks = -1;
     }
-
     //Fill output tree
     outputTree->Fill();
-  } // loop over TOFPET events
-  
-
-  
+    } // TOFPET event loop
+  } // TOFPET spill loop
   //save
   outputTree->Write();
 
