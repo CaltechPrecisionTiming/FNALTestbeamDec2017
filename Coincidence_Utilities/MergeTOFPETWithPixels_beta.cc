@@ -625,25 +625,32 @@ int main(int argc, char* argv[]) {
       }
     }
     PreviouslyMatchedTriggerNumber=DRSspillIndex[i]-1;
-    cout<<"==============================================================================\n";
+    //cout<<"==============================================================================\n";
     for(int k=evtstart;k<TOFPETEvent.size() && TOFPETEvent[k]<TOFPETspillIndex[i+1];k++){
       bool stopSearching=false;
       int MatchedTriggerIndex = -1;
       if(timeElapsedSincePreviousTrigger[k]<0.1 && timeElapsedResetted[k]<4.){
 	double diff=9999;
-	for(int iEvent=PreviouslyMatchedTriggerNumber+1;iEvent<DRSspillIndex[i+1] && !stopSearching;iEvent++){
+	for(int iEvent=(PreviouslyMatchedTriggerNumber>k-3?PreviouslyMatchedTriggerNumber+1:k-3);iEvent<DRSspillIndex[i+1] && !stopSearching;iEvent++){
 
-	  //if (debugLevel > 100) {
+	  if (debugLevel > 100) {
 	    cout << "TOFPET Event " << k << " , " << timeElapsedResetted[k]<<" "<<timeElapsedSincePreviousTrigger[k]
 		 << " -> " << iEvent << " , " << DRSTimestampsResetted[iEvent]*1e-9<<" "
 		 <<DRSTimestampDelay[iEvent]*1e-9<<" | " 
 	       << fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k]) << ", "
 		 << fabs(DRSTimestampDelay[iEvent]*1e-9-timeElapsedSincePreviousTrigger[k])<<" "<<DRSpixMatch[iEvent]<<"\n";
-	    //}
-	    if ( fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])<0.0005 && DRSpixMatch[iEvent]!=-9999 && diff>fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])) {
+	    }
+	    if ( fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])<0.001 /*&& DRSpixMatch[iEvent]!=-9999*/ && diff>fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])) {
 	    PreviouslyMatchedTriggerNumber = iEvent;
 	    MatchedTriggerIndex = iEvent;
-	    cout<<"xxxxxxxxxxxxxxx    Matched : "<<PreviouslyMatchedTriggerNumber<<endl;
+	    //cout<<"xxxxxxxxxxxxxxx    Matched : "<<PreviouslyMatchedTriggerNumber<<endl;
+	    /*if(chEnergy[23]<200. && chEnergy[23]>0. && DRSpixMatch[MatchedTriggerIndex]!=-9999 && chEnergy[41]>-9000){
+	      cout << "TOFPET Event " << k << " , " << timeElapsedResetted[k]<<" "<<timeElapsedSincePreviousTrigger[k]
+		   << " -> " << " DRS Event "<< iEvent << " , " << DRSTimestampsResetted[iEvent]*1e-9<<" "
+		   <<DRSTimestampDelay[iEvent]*1e-9<<" | "
+		   << fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k]) << ", "
+		   << fabs(DRSTimestampDelay[iEvent]*1e-9-timeElapsedSincePreviousTrigger[k])<<" "<<DRSpixMatch[iEvent]<<"\n";
+		   }*/
 	    diff=fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k]);
 	  }
 	  else{
@@ -652,7 +659,7 @@ int main(int argc, char* argv[]) {
 	}//for DRS loop
       }//if(timeElapsedSincePreviousTrigger[k]<0.1 && timeElapsedResetted[k]<4.){
       TOFPETEventTree->GetEntry(TOFPETEvent[k]);
-      if (MatchedTriggerIndex >= 0) {
+      if (MatchedTriggerIndex >= 0 && DRSpixMatch[MatchedTriggerIndex]!=-9999) {
        ntracks = 0;
        PixelTree->GetEntry(DRSpixMatch[MatchedTriggerIndex]);
        xIntercept = pixelEvent.xIntercept;
