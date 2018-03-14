@@ -625,7 +625,7 @@ int main(int argc, char* argv[]) {
       }
     }
     PreviouslyMatchedTriggerNumber=DRSspillIndex[i]-1;
-    //cout<<"==============================================================================\n";
+    cout<<"==============================================================================\n";
     for(int k=evtstart;k<TOFPETEvent.size() && TOFPETEvent[k]<TOFPETspillIndex[i+1];k++){
       bool stopSearching=false;
       int MatchedTriggerIndex = -1;
@@ -633,17 +633,17 @@ int main(int argc, char* argv[]) {
 	double diff=9999;
 	for(int iEvent=PreviouslyMatchedTriggerNumber+1;iEvent<DRSspillIndex[i+1] && !stopSearching;iEvent++){
 
-	  if (debugLevel > 100) {
+	  //if (debugLevel > 100) {
 	    cout << "TOFPET Event " << k << " , " << timeElapsedResetted[k]<<" "<<timeElapsedSincePreviousTrigger[k]
 		 << " -> " << iEvent << " , " << DRSTimestampsResetted[iEvent]*1e-9<<" "
 		 <<DRSTimestampDelay[iEvent]*1e-9<<" | " 
 	       << fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k]) << ", "
 		 << fabs(DRSTimestampDelay[iEvent]*1e-9-timeElapsedSincePreviousTrigger[k])<<" "<<DRSpixMatch[iEvent]<<"\n";
-	    }
-	    if ( fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])<0.002 && DRSpixMatch[iEvent]!=-9999 && diff>fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])) {
+	    //}
+	    if ( fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])<0.0005 && DRSpixMatch[iEvent]!=-9999 && diff>fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k])) {
 	    PreviouslyMatchedTriggerNumber = iEvent;
 	    MatchedTriggerIndex = iEvent;
-	    //cout<<"xxxxxxxxxxxxxxx    Matched : "<<PreviouslyMatchedTriggerNumber<<endl;
+	    cout<<"xxxxxxxxxxxxxxx    Matched : "<<PreviouslyMatchedTriggerNumber<<endl;
 	    diff=fabs(DRSTimestampsResetted[iEvent]*1e-9 - timeElapsedResetted[k]);
 	  }
 	  else{
